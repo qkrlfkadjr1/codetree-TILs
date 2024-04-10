@@ -134,30 +134,53 @@ public class Main {
 		return distance;
 	}
 	
-	public static void getRange() {
-		//runners sort -> r이 작은 러너가 가장 뒤로 오게(뒤에서부터 순회하므로)
-		Collections.sort(runners);
-		int minLength = Integer.MAX_VALUE;
-		int minLengthR = -1;
-		int minLengthC = -1;
-		for (int idx=runners.size()-1; idx>=0; idx--) {
-			Runner runner = runners.get(idx);
-			int currentLength = Math.max(Math.abs(runner.r - exitR), Math.abs(runner.c - exitC));
-			if (currentLength < minLength) {
-				minLength = currentLength; //minLength가 2라면, 변의 길이는 3이다.
-				minLengthR = runner.r;
-				minLengthC = runner.c;
+	// public static void getRange() {
+	// 	//runners sort -> r이 작은 러너가 가장 뒤로 오게(뒤에서부터 순회하므로)
+	// 	Collections.sort(runners);
+	// 	int minLength = Integer.MAX_VALUE;
+	// 	int minLengthR = -1;
+	// 	int minLengthC = -1;
+	// 	for (int idx=runners.size()-1; idx>=0; idx--) {
+	// 		Runner runner = runners.get(idx);
+	// 		int currentLength = Math.max(Math.abs(runner.r - exitR), Math.abs(runner.c - exitC));
+	// 		if (currentLength < minLength) {
+	// 			minLength = currentLength; //minLength가 2라면, 변의 길이는 3이다.
+	// 			minLengthR = runner.r;
+	// 			minLengthC = runner.c;
+	// 		}
+	// 	}
+		
+	// 	eR = Math.max(exitR, minLengthR);
+	// 	eR = Math.max(eR, minLength); //여기서 minLength는, 0 + minLength 좌표를 의미한다.
+	// 	eC = Math.max(exitC, minLengthC);
+	// 	eC = Math.max(eC, minLength);
+		
+	// 	sR = eR - minLength;
+	// 	sC = eC - minLength;
+	// 	return;
+	// }
+		public static void getRange() {
+		for (int minLength=2; minLength<=N; minLength++) {
+			for (int r=0; r<=N-minLength; r++) {
+				for (int c=0; c<=N-minLength; c++) {
+					int R1 = r;
+					int R2 = r+minLength-1;
+					int C1 = c;
+					int C2 = c+minLength-1;
+					if (isRange2(R1, C1, R2, C2, exitR, exitC)) {
+						for (Runner runner: runners) {
+							if (isRange2(R1, C1, R2, C2, runner.r, runner.c)) {
+								sR = R1;
+								sC = C1;
+								eR = R2;
+								eC = C2;
+								return;
+							}
+						}
+					}
+				}
 			}
 		}
-		
-		eR = Math.max(exitR, minLengthR);
-		eR = Math.max(eR, minLength); //여기서 minLength는, 0 + minLength 좌표를 의미한다.
-		eC = Math.max(exitC, minLengthC);
-		eC = Math.max(eC, minLength);
-		
-		sR = eR - minLength;
-		sC = eC - minLength;
-		return;
 	}
 	
 	
@@ -207,4 +230,7 @@ public class Main {
 		return sR <= r && r <= eR && sC <= c && c <= eC;
 	}
 
+	public static boolean isRange2(int R1, int C1, int R2, int C2, int r, int c) {
+		return R1 <= r && r <= R2 && C1 <= c && c <= C2;
+	}
 }
