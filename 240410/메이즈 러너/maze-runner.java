@@ -111,7 +111,7 @@ public class Main {
 			board = rotateMaze(copiedBoard);
 		}
 		
-		sb.append(ans).append("\n").append(exitR+1).append(" ").append(exitC+1).append("\n");
+		sb.append(ans).append("\n").append(exitR+1).append(" ").append(exitC+1);
 		System.out.println(sb);
 	}
 	
