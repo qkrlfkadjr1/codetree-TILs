@@ -89,7 +89,7 @@ public class Main {
 					runner.c = newC;
 					if (newR == exitR && newC == exitC) {
 						//만약 새로 이동한 좌표가 출구라면 -> 해당 러너 탈출
-//						exitCnt++;
+						exitCnt++;
 						runners.remove(idx); //해당 러너 탈출
 //						if (exitCnt == M) 이걸 여기서 굳이 처리해야 할까?
 					}
