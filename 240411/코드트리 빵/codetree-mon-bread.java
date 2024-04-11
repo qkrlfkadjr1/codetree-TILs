@@ -36,6 +36,30 @@ public class Main {
 		}
 	}
 	
+	static class PositionWithDist implements Comparable<PositionWithDist> {
+		int r;
+		int c;
+		int dist;
+		public PositionWithDist(int r, int c, int dist) {
+			super();
+			this.r = r;
+			this.c = c;
+			this.dist = dist;
+		}
+		public int compareTo(PositionWithDist o) {
+			if (this.r < o.r) return -1;
+			else if (this.r > o.r) return 1;
+			else {
+				if (this.c < o.c) return -1;
+				else return 1;
+			}
+		}
+		@Override
+		public String toString() {
+			return "PositionWithDist [r=" + r + ", c=" + c + ", dist=" + dist + "]";
+		}
+	}
+	
 	static class BaseCamp {
 		int r;
 		int c;
@@ -257,41 +281,81 @@ public class Main {
 			//베이스캠프 선정하기 -> 결국 num == idx인 buyer를 만드는 과정: buyer의 위치 선정 후 list에 투입, 베이스캠프 block 처리
 			Bakery target = bakeries[idx];
 			
-			int minDist = Integer.MAX_VALUE;
-			int buyerR = -1;
-			int buyerC = -1;
+//			int minDist = Integer.MAX_VALUE;
+//			int buyerR = -1;
+//			int buyerC = -1;
 			
-
-//			for (BaseCamp baseCamp: baseCamps) {
-			int selectedIdx = -1;
-			for (int i=baseCamps.size()-1; i>=0; i--) {
-				BaseCamp baseCamp = baseCamps.get(i);
-				//모든 베이스캠프에 대해서 순회
-				if (baseCamp.isBlocked) continue;
-				int currentDist = Math.abs(baseCamp.r - target.r) + Math.abs(baseCamp.c - target.c);
-				if (currentDist < minDist) {
-					buyerR = baseCamp.r;
-					buyerC = baseCamp.c;
-					minDist = currentDist;
-					selectedIdx = i;
+			//target에서 BFS -> 최단거리까지 찾고 종료
+			Queue<PositionWithDist> queue = new ArrayDeque<>();
+			boolean[][] visited = new boolean[n][n];
+			queue.offer(new PositionWithDist(target.r, target.c, 0));
+			visited[target.r][target.c] = true;
+			
+			int currentMinDist = Integer.MAX_VALUE;
+			PriorityQueue<PositionWithDist> pq = new PriorityQueue<>();
+			boolean stopFlag = false;
+			while (!queue.isEmpty()) {
+				PositionWithDist current = queue.poll();
+				if (board[current.r][current.c] == 1) { //현재 꺼낸 좌표가 베이스캠프인 경우
+					if (current.dist < currentMinDist) currentMinDist = current.dist;
+					if (current.dist == currentMinDist) {
+						pq.offer(current);
+					}
+					stopFlag = true;
 				}
-				else if (currentDist == minDist) {
-					if (baseCamp.r < buyerR) { //새로 찾은 베이스캠프의 행이 더 작은 경우 갱신
-						buyerR = baseCamp.r;
-						buyerC = baseCamp.c;
-						selectedIdx = i;
-					}
-					else if (baseCamp.r == buyerR) {
-						if (baseCamp.c < buyerC) {
-							buyerR = baseCamp.r;
-							buyerC = baseCamp.c;
-							selectedIdx = i;
+				
+				if (!stopFlag) { //더 이상 큐에 새로운 좌표를 넣지 않는다.(기존에 넣어놨었던 좌표에 대해서만 판단한다.) 
+					for (int i=0; i<4; i++) {
+						int nr = current.r + dr[i];
+						int nc = current.c + dc[i];
+						if (isRange(nr, nc) && !visited[nr][nc] && blockedPosition.get(new Position(nr, nc)) == null) {
+							visited[nr][nc] = true;
+							queue.offer(new PositionWithDist(nr, nc, current.dist + 1));
 						}
-					}
+					}	
 				}
 			}
+			
+//			for (BaseCamp baseCamp: baseCamps) {
+//			int selectedIdx = -1;
+//			for (int i=baseCamps.size()-1; i>=0; i--) {
+//				BaseCamp baseCamp = baseCamps.get(i);
+//				//모든 베이스캠프에 대해서 순회
+//				if (baseCamp.isBlocked) continue;
+//				int currentDist = Math.abs(baseCamp.r - target.r) + Math.abs(baseCamp.c - target.c);
+//				if (currentDist < minDist) {
+//					buyerR = baseCamp.r;
+//					buyerC = baseCamp.c;
+//					minDist = currentDist;
+//					selectedIdx = i;
+//				}
+//				else if (currentDist == minDist) {
+//					if (baseCamp.r < buyerR) { //새로 찾은 베이스캠프의 행이 더 작은 경우 갱신
+//						buyerR = baseCamp.r;
+//						buyerC = baseCamp.c;
+//						selectedIdx = i;
+//					}
+//					else if (baseCamp.r == buyerR) {
+//						if (baseCamp.c < buyerC) {
+//							buyerR = baseCamp.r;
+//							buyerC = baseCamp.c;
+//							selectedIdx = i;
+//						}
+//					}
+//				}
+//			}
+			
+			int selectedIdx = -1;
+			PositionWithDist finalPosition = pq.poll();
+			for (int i=0; i<baseCamps.size(); i++) {
+				BaseCamp baseCamp = baseCamps.get(i);
+				if (baseCamp.r == finalPosition.r && baseCamp.c == finalPosition.c) {
+					selectedIdx = i;
+				}
+			}
+			
 			//위치 선정 완료
-			buyers.add(new Buyer(idx, buyerR, buyerC));
+			buyers.add(new Buyer(idx, finalPosition.r, finalPosition.c));
 			BaseCamp selectedBaseCamp = baseCamps.get(selectedIdx);
 			selectedBaseCamp.isBlocked = true;
 			blockedPosition.put(new Position(selectedBaseCamp.r, selectedBaseCamp.c), true);
