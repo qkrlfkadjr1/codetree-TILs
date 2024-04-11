@@ -139,16 +139,21 @@ public class Main {
 			bakeries[i] = new Bakery(i, Integer.parseInt(st.nextToken())-1, Integer.parseInt(st.nextToken())-1); //0번째부터 시작
 		}
 		
+		
+		
+		
+		
+		
+		
+		
 		time = 0;
 		arriveCnt = 0;
 		while (true) {
 			time++;
-			
 			moveAll();
 			if (arriveCnt == m) {
 				break;
 			}
-			
 			enterBaseCamp();
 		}
 		System.out.println(time);
@@ -168,27 +173,32 @@ public class Main {
 			Buyer buyer = buyers.get(idx);
 			int num = buyer.num;
 			Bakery target = bakeries[num];
-			if (!buyer.hasDistanceMatrix) {
-				buyer.distanceMatrix = getDistance(target.r, target.c);
-				buyer.hasDistanceMatrix = true;
-			}
-//			int[][] distanceMatrix = getDistance(target.r, target.c);
+//			if (!buyer.hasDistanceMatrix) {
+//				buyer.distanceMatrix = getDistance(target.r, target.c);
+//				buyer.hasDistanceMatrix = true;
+//			}
+			int[][] distanceMatrix = getDistance(target.r, target.c);
+			int currentDistance = Integer.MAX_VALUE;
+			int newR = buyer.r;
+			int newC = buyer.c;
 			for (int i=0; i<4; i++) {
 				int nr = buyer.r + dr[i];
 				int nc = buyer.c + dc[i];
-				if (isRange(nr, nc) && buyer.distanceMatrix[nr][nc] < buyer.distanceMatrix[buyer.r][buyer.c] && blockedPosition.get(new Position(nr, nc)) == null) {
-					buyer.r = nr;
-					buyer.c = nc;
-					
+				if (isRange(nr, nc) && distanceMatrix[nr][nc] != 0 && distanceMatrix[nr][nc] < currentDistance && blockedPosition.get(new Position(nr, nc)) == null) {
+					newR = nr;
+					newC = nc;
+					currentDistance = distanceMatrix[nr][nc];
 					//편의점 도착하는 경우
-					if (buyer.r == target.r && buyer.c == target.c) {
+					if (newR == target.r && newC == target.c) {
 						target.arriveFlag = true;
 						buyers.remove(idx);
 						arriveCnt++;
+						break;
 					}
-					break;
 				}
 			}
+			buyer.r = newR;
+			buyer.c = newC;
 			if (arriveCnt == m) { //모두 도착한 경우 종료
 				return;
 			}
@@ -215,6 +225,7 @@ public class Main {
 	
 	public static int[][] getDistance(int bakeryR, int bakeryC) {
 		int[][] distanceMatrix = new int[n][n];
+		
 		Queue<Position> queue = new ArrayDeque<>(); 
 		distanceMatrix[bakeryR][bakeryC] = 1;
 		queue.offer(new Position(bakeryR, bakeryC));
@@ -224,7 +235,7 @@ public class Main {
 			for (int i=0; i<4; i++) {
 				int nr = current.r + dr[i];
 				int nc = current.c + dc[i];
-				if (isRange(nr, nc) && distanceMatrix[nr][nc] == 0) {
+				if (isRange(nr, nc) && distanceMatrix[nr][nc] == 0 && blockedPosition.get(new Position(nr, nc)) == null) {
 					distanceMatrix[nr][nc] = distanceMatrix[current.r][current.c] + 1;
 					queue.offer(new Position(nr, nc));
 				}
