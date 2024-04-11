@@ -78,12 +78,16 @@ public class Main {
 		int r;
 		int c;
 		boolean isArrived;
+        int[][] distanceMatrix;
+        boolean hasDistanceMatrix;
 		public Buyer(int num, int r, int c) {
 			super();
 			this.num = num;
 			this.r = r;
 			this.c = c;
 			this.isArrived = false;
+            this.distanceMatrix = null;
+            this.hasDistanceMatrix = false;
 		}
 		@Override
 		public String toString() {
@@ -164,11 +168,15 @@ public class Main {
 			Buyer buyer = buyers.get(idx);
 			int num = buyer.num;
 			Bakery target = bakeries[num];
-			int[][] distanceMatrix = getDistance(target.r, target.c);
+			if (!buyer.hasDistanceMatrix) {
+				buyer.distanceMatrix = getDistance(target.r, target.c);
+				buyer.hasDistanceMatrix = true;
+			}
+//			int[][] distanceMatrix = getDistance(target.r, target.c);
 			for (int i=0; i<4; i++) {
 				int nr = buyer.r + dr[i];
 				int nc = buyer.c + dc[i];
-				if (isRange(nr, nc) && distanceMatrix[nr][nc] < distanceMatrix[buyer.r][buyer.c] && blockedPosition.get(new Position(nr, nc)) == null) {
+				if (isRange(nr, nc) && buyer.distanceMatrix[nr][nc] < buyer.distanceMatrix[buyer.r][buyer.c] && blockedPosition.get(new Position(nr, nc)) == null) {
 					buyer.r = nr;
 					buyer.c = nc;
 					
